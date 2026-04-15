@@ -121,16 +121,18 @@ Let's use the built-in `/init` command to generate a workspace instructions file
 
 **Local background agent:**
 
-1. In the Chat panel, click **+** → **New background agent**
-2. Enter the prompt:
+1. In the Chat panel, click **+** for a new chat
+2. In the bottom of the window you will see **Local** change to **Copilot CLI**
+3. Enter the prompt:
 
    > "Add linting rules for unused vars and improve code style; fix any errors"
 
-3. When it finishes, **Review and Apply** the changes, then delete the session.
+4. When it finishes, **Review and Apply** the changes, then archive the session if you desire.
 
 **Cloud agent:**
 
-1. Start another background agent with:
+1. In the Chat panel, click **+** for a new chat
+2. In the bottom of the window you will see **Local** change to **Cloud**
 
    > "Make the README more engaging as a landing page"
 
