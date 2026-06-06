@@ -21,7 +21,7 @@ A workshop template for building a retro arcade-themed website with Astro that c
 ## ⚡ Start in 60 seconds
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/AtilaYumer/mona-mayhem.git
 cd mona-mayhem
 npm install
 npm run dev
