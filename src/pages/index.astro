@@ -139,11 +139,11 @@
 			<form class="battle-form" id="battle-form" novalidate aria-label="GitHub username battle form">
 				<label for="username-one">
 					Player One Username
-					<input id="username-one" name="usernameOne" autocomplete="off" />
+					<input id="username-one" name="usernameOne" autocomplete="off" placeholder="e.g. octocat" />
 				</label>
 				<label for="username-two">
 					Player Two Username
-					<input id="username-two" name="usernameTwo" autocomplete="off" />
+					<input id="username-two" name="usernameTwo" autocomplete="off" placeholder="e.g. monalisa" />
 				</label>
 				<p id="error-message" class="error-message" role="alert" aria-live="polite"></p>
 				<button type="submit">Battle</button>
@@ -180,13 +180,13 @@
 				form.classList.remove('error-shake');
 			};
 
-			const isInvalidUsername = (value) => !usernamePattern.test(value);
+			const isValidUsername = (value) => usernamePattern.test(value);
 
 			form.addEventListener('submit', (event) => {
 				event.preventDefault();
 
-				const usernameOne = usernameOneInput.value.trim();
-				const usernameTwo = usernameTwoInput.value.trim();
+				const usernameOne = usernameOneInput.value.trim().toLowerCase();
+				const usernameTwo = usernameTwoInput.value.trim().toLowerCase();
 
 				clearError();
 				markInputError(usernameOneInput, false);
@@ -211,7 +211,7 @@
 					return;
 				}
 
-				if (isInvalidUsername(usernameOne)) {
+				if (!isValidUsername(usernameOne)) {
 					markInputError(usernameOneInput, true);
 					showError(
 						`"${usernameOne}" is not a valid GitHub username. Use 1-39 letters, numbers, or single hyphens.`
@@ -219,13 +219,15 @@
 					return;
 				}
 
-				if (isInvalidUsername(usernameTwo)) {
+				if (!isValidUsername(usernameTwo)) {
 					markInputError(usernameTwoInput, true);
 					showError(
 						`"${usernameTwo}" is not a valid GitHub username. Use 1-39 letters, numbers, or single hyphens.`
 					);
 					return;
 				}
+
+				window.location.href = `/battle?p1=${encodeURIComponent(usernameOne)}&p2=${encodeURIComponent(usernameTwo)}`;
 			});
 
 			[usernameOneInput, usernameTwoInput].forEach((input) => {
