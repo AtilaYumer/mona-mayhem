@@ -136,7 +136,7 @@
 		<main>
 			<h1>Mona Mayhem</h1>
 			<p>Enter two GitHub usernames and press Battle.</p>
-			<form class="battle-form" id="battle-form" novalidate>
+			<form class="battle-form" id="battle-form" novalidate aria-label="GitHub username battle form">
 				<label for="username-one">
 					Player One Username
 					<input id="username-one" name="usernameOne" autocomplete="off" />
@@ -155,7 +155,11 @@
 			const usernameOneInput = document.getElementById('username-one');
 			const usernameTwoInput = document.getElementById('username-two');
 			const errorMessage = document.getElementById('error-message');
-			const usernamePattern = /^(?!-)(?!.*--)[A-Za-z0-9-]{1,39}$/;
+			const usernamePattern = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/;
+
+			if (!form || !usernameOneInput || !usernameTwoInput || !errorMessage) {
+				throw new Error('Battle form elements are missing.');
+			}
 
 			const markInputError = (input, hasError) => {
 				input.classList.toggle('input-error', hasError);
@@ -176,9 +180,9 @@
 				form.classList.remove('error-shake');
 			};
 
-			const isInvalidUsername = (value) => !usernamePattern.test(value) || value.endsWith('-');
+			const isInvalidUsername = (value) => !usernamePattern.test(value);
 
-			form?.addEventListener('submit', (event) => {
+			form.addEventListener('submit', (event) => {
 				event.preventDefault();
 
 				const usernameOne = usernameOneInput.value.trim();
@@ -225,7 +229,7 @@
 			});
 
 			[usernameOneInput, usernameTwoInput].forEach((input) => {
-				input?.addEventListener('input', () => {
+				input.addEventListener('input', () => {
 					markInputError(input, false);
 					if (errorMessage.textContent) {
 						clearError();
