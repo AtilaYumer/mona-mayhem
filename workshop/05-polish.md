@@ -7,9 +7,8 @@ Now that the app works and looks great, it's time to polish. This part is about 
 <!-- track:vscode:start -->
 ## Task 1: Background Agent for Responsive Design
 
-1. In the Chat panel, click **+** for a new chat
-2. In the bottom of the window you will see **Local** change to **Copilot CLI**
-3. Enter this prompt:
+1. In the Chat panel, click **+** → **New background agent**.
+2. Enter this prompt:
 
    ```
    Add responsive CSS media queries: at 1024px switch comparison to single column,
@@ -18,8 +17,8 @@ Now that the app works and looks great, it's time to polish. This part is about 
    Enter triggers battle, and focus states are visible.
    ```
 
-4. Let it run independently — you don't need to watch it.
-5. When it finishes, **Review** the changes and click **Apply**.
+3. Let it run independently — you don't need to watch it.
+4. When it finishes, **Review** the changes and click **Apply**.
 
 ## Task 2: Background Agent for Error UX
 
@@ -37,9 +36,8 @@ Now that the app works and looks great, it's time to polish. This part is about 
 
 ## Task 3: Cloud Agent for Variations (Optional)
 
-1. In the Chat panel, click **+** for a new chat
-2. In the bottom of the window you will see **Local** change to **Cloud**
-3. Enter this prompt:
+1. Click **+** → **New cloud agent**.
+2. Enter this prompt:
 
    ```
    Create an alternative color theme for the battle page — keep the retro arcade
@@ -47,8 +45,8 @@ Now that the app works and looks great, it's time to polish. This part is about 
    Create it as a CSS custom property theme that could be toggled.
    ```
 
-4. Check **agent sessions** to monitor progress.
-5. Review the design variation in the PR the cloud agent creates.
+3. Check **agent sessions** to monitor progress.
+4. Review the design variation in the PR the cloud agent creates.
 
 ## Task 4: Verify Everything
 <!-- track:vscode:end -->
