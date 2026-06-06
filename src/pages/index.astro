@@ -180,7 +180,7 @@
 				form.classList.remove('error-shake');
 			};
 
-			const isInvalidUsername = (value) => !usernamePattern.test(value);
+			const isValidUsername = (value) => usernamePattern.test(value);
 
 			form.addEventListener('submit', (event) => {
 				event.preventDefault();
@@ -211,7 +211,7 @@
 					return;
 				}
 
-				if (isInvalidUsername(usernameOne)) {
+				if (!isValidUsername(usernameOne)) {
 					markInputError(usernameOneInput, true);
 					showError(
 						`"${usernameOne}" is not a valid GitHub username. Use 1-39 letters, numbers, or single hyphens.`
@@ -219,7 +219,7 @@
 					return;
 				}
 
-				if (isInvalidUsername(usernameTwo)) {
+				if (!isValidUsername(usernameTwo)) {
 					markInputError(usernameTwoInput, true);
 					showError(
 						`"${usernameTwo}" is not a valid GitHub username. Use 1-39 letters, numbers, or single hyphens.`
