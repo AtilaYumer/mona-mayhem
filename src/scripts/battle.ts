@@ -249,6 +249,42 @@ function buildCalendar(cells: ContributionCell[], palette: string[]): { weeks: C
 	return { weeks, monthLabels };
 }
 
+const GITHUB_USERNAME_RE = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/;
+
+function validateUsername(value: string): string | null {
+	if (!value) {
+		return 'Username cannot be empty.';
+	}
+	if (value.length > 39) {
+		return 'Username must be 39 characters or fewer.';
+	}
+	if (!GITHUB_USERNAME_RE.test(value)) {
+		return 'Invalid username. Use letters, numbers, or hyphens only.';
+	}
+	return null;
+}
+
+function triggerShake(el: HTMLElement): void {
+	el.classList.remove('input-error');
+	// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+	void el.offsetWidth;
+	el.classList.add('input-error');
+}
+
+function setFieldError(input: HTMLInputElement, errorEl: HTMLElement, message: string | null): void {
+	if (message) {
+		errorEl.textContent = message;
+		errorEl.classList.add('visible');
+		triggerShake(input);
+		input.setAttribute('aria-invalid', 'true');
+	} else {
+		errorEl.textContent = '';
+		errorEl.classList.remove('visible');
+		input.classList.remove('input-error');
+		input.removeAttribute('aria-invalid');
+	}
+}
+
 function toUserFacingError(payload: ApiErrorResponse | null, username: string): string {
 	if (!payload) {
 		return `Could not load data for ${username}.`;
@@ -374,6 +410,8 @@ export function initBattlePage(): void {
 	const battleForm = document.getElementById('battleForm');
 	const playerOneInput = document.getElementById('playerOne');
 	const playerTwoInput = document.getElementById('playerTwo');
+	const playerOneError = document.getElementById('playerOneError');
+	const playerTwoError = document.getElementById('playerTwoError');
 	const battleButton = document.getElementById('battleButton');
 	const statusEl = document.getElementById('status');
 	const resultsContent = document.getElementById('resultsContent');
@@ -382,6 +420,8 @@ export function initBattlePage(): void {
 		!(battleForm instanceof HTMLFormElement) ||
 		!(playerOneInput instanceof HTMLInputElement) ||
 		!(playerTwoInput instanceof HTMLInputElement) ||
+		!(playerOneError instanceof HTMLElement) ||
+		!(playerTwoError instanceof HTMLElement) ||
 		!(battleButton instanceof HTMLButtonElement) ||
 		!(statusEl instanceof HTMLElement) ||
 		!(resultsContent instanceof HTMLElement)
@@ -389,20 +429,50 @@ export function initBattlePage(): void {
 		return;
 	}
 
-	const runBattle = async (): Promise<void> => {
+	const setStatus = (message: string, type: 'error' | 'loading' | 'success' | ''): void => {
+		statusEl.textContent = message;
 		statusEl.className = 'status';
+		if (type) {
+			statusEl.classList.remove('status');
+			statusEl.className = `status ${type}`;
+			if (type === 'error') {
+				statusEl.classList.remove('error');
+				void statusEl.offsetWidth;
+				statusEl.classList.add('error');
+			}
+		}
+	};
+
+	const runBattle = async (): Promise<void> => {
 		const playerOne = playerOneInput.value.trim();
 		const playerTwo = playerTwoInput.value.trim();
 
-		if (!playerOne || !playerTwo) {
-			statusEl.textContent = 'Please enter both usernames before starting a battle.';
-			statusEl.classList.add('error');
+		const errorOne = validateUsername(playerOne);
+		const errorTwo = validateUsername(playerTwo);
+
+		setFieldError(playerOneInput, playerOneError, errorOne);
+		setFieldError(playerTwoInput, playerTwoError, errorTwo);
+
+		if (errorOne || errorTwo) {
+			const bothEmpty = !playerOne && !playerTwo;
+			setStatus(
+				bothEmpty
+					? 'Enter both usernames to start a battle.'
+					: 'Fix the errors above before starting a battle.',
+				'error'
+			);
+			if (errorOne) {
+				playerOneInput.focus();
+			} else {
+				playerTwoInput.focus();
+			}
 			return;
 		}
 
+		setStatus('', '');
+
 		battleButton.disabled = true;
-		statusEl.textContent = 'Loading contribution data...';
-		statusEl.classList.add('loading');
+		setStatus('Loading contribution data...', 'loading');
 
 		try {
 			const [playerOneData, playerTwoData] = await Promise.all([
@@ -417,17 +487,28 @@ export function initBattlePage(): void {
 					${renderPlayerCard('Player 2', playerTwoData, playerTwo)}
 				</div>
 			`;
-			statusEl.textContent = 'Battle complete.';
-			statusEl.classList.remove('loading', 'error');
+			setStatus('Battle complete.', '');
 		} catch (error) {
-			statusEl.textContent =
-				error instanceof Error ? error.message : 'Something went wrong while running the battle.';
-			statusEl.classList.remove('loading');
-			statusEl.classList.add('error');
+			setStatus(
+				error instanceof Error ? error.message : 'Something went wrong while running the battle.',
+				'error'
+			);
 		} finally {
 			battleButton.disabled = false;
 		}
 	};
+
+	const clearFieldErrorOnInput = (input: HTMLInputElement, errorEl: HTMLElement): void => {
+		input.addEventListener('input', () => {
+			if (input.classList.contains('input-error')) {
+				const msg = validateUsername(input.value.trim());
+				setFieldError(input, errorEl, msg);
+			}
+		});
+	};
+
+	clearFieldErrorOnInput(playerOneInput, playerOneError);
+	clearFieldErrorOnInput(playerTwoInput, playerTwoError);
 
 	battleForm.addEventListener('submit', async (event) => {
 		event.preventDefault();
