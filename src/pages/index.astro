@@ -9,9 +9,235 @@
 		<meta name="viewport" content="width=device-width" />
 		<meta name="generator" content={Astro.generator} />
 		<title>Mona Mayhem</title>
+		<style>
+			:root {
+				color-scheme: dark;
+				font-family: 'Press Start 2P', system-ui, sans-serif;
+				background: #0a0a1a;
+				color: #f2f2f2;
+			}
+
+			body {
+				margin: 0;
+				min-height: 100vh;
+				display: grid;
+				place-items: center;
+				background: radial-gradient(circle at top, #1b1b3d 0%, #0a0a1a 60%);
+			}
+
+			main {
+				width: min(90vw, 720px);
+				padding: 2rem;
+				border: 2px solid #5fed83;
+				border-radius: 12px;
+				background: rgba(10, 10, 26, 0.85);
+				box-shadow: 0 0 20px rgba(95, 237, 131, 0.35);
+			}
+
+			h1 {
+				margin-top: 0;
+				text-align: center;
+				color: #5fed83;
+				text-shadow: 0 0 12px rgba(95, 237, 131, 0.7);
+			}
+
+			p {
+				text-align: center;
+				opacity: 0.9;
+			}
+
+			.battle-form {
+				display: grid;
+				gap: 1rem;
+			}
+
+			label {
+				display: grid;
+				gap: 0.5rem;
+				font-size: 0.75rem;
+			}
+
+			input {
+				padding: 0.75rem;
+				border: 2px solid #8a2be2;
+				border-radius: 8px;
+				background: #111129;
+				color: #f2f2f2;
+				font-size: 0.9rem;
+				transition: border-color 0.2s ease, box-shadow 0.2s ease;
+			}
+
+			input:focus-visible {
+				outline: none;
+				border-color: #5fed83;
+				box-shadow: 0 0 10px rgba(95, 237, 131, 0.6);
+			}
+
+			input.input-error {
+				border-color: #ff3366;
+				box-shadow: 0 0 8px rgba(255, 51, 102, 0.75);
+			}
+
+			button {
+				padding: 0.85rem 1rem;
+				border: 2px solid #5fed83;
+				border-radius: 8px;
+				background: #13213d;
+				color: #f2f2f2;
+				font-family: inherit;
+				font-size: 0.85rem;
+				cursor: pointer;
+			}
+
+			button:hover {
+				box-shadow: 0 0 12px rgba(95, 237, 131, 0.6);
+			}
+
+			.error-message {
+				margin: 0;
+				padding: 0.75rem 1rem;
+				border: 2px solid #ff3366;
+				border-radius: 8px;
+				color: #ff3366;
+				background: rgba(255, 51, 102, 0.08);
+				text-shadow: 0 0 6px rgba(255, 51, 102, 0.9), 0 0 14px rgba(255, 51, 102, 0.6);
+				box-shadow: inset 0 0 10px rgba(255, 51, 102, 0.35), 0 0 12px rgba(255, 51, 102, 0.4);
+				font-size: 0.75rem;
+				line-height: 1.45;
+				display: none;
+			}
+
+			.error-message.visible {
+				display: block;
+			}
+
+			.battle-form.error-shake {
+				animation: error-shake 300ms ease-in-out;
+			}
+
+			@keyframes error-shake {
+				0%,
+				100% {
+					transform: translateX(0);
+				}
+				25% {
+					transform: translateX(-8px);
+				}
+				50% {
+					transform: translateX(8px);
+				}
+				75% {
+					transform: translateX(-4px);
+				}
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Mona Mayhem</h1>
-		<p>Welcome to Mona Mayhem! Time to build a GitHub Contribution Battle Arena.</p>
+		<main>
+			<h1>Mona Mayhem</h1>
+			<p>Enter two GitHub usernames and press Battle.</p>
+			<form class="battle-form" id="battle-form" novalidate aria-label="GitHub username battle form">
+				<label for="username-one">
+					Player One Username
+					<input id="username-one" name="usernameOne" autocomplete="off" placeholder="e.g. octocat" />
+				</label>
+				<label for="username-two">
+					Player Two Username
+					<input id="username-two" name="usernameTwo" autocomplete="off" placeholder="e.g. monalisa" />
+				</label>
+				<p id="error-message" class="error-message" role="alert" aria-live="polite"></p>
+				<button type="submit">Battle</button>
+			</form>
+		</main>
+
+		<script>
+			const form = document.getElementById('battle-form');
+			const usernameOneInput = document.getElementById('username-one');
+			const usernameTwoInput = document.getElementById('username-two');
+			const errorMessage = document.getElementById('error-message');
+			const usernamePattern = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/;
+
+			if (!form || !usernameOneInput || !usernameTwoInput || !errorMessage) {
+				throw new Error('Battle form elements are missing.');
+			}
+
+			const markInputError = (input, hasError) => {
+				input.classList.toggle('input-error', hasError);
+				input.setAttribute('aria-invalid', String(hasError));
+			};
+
+			const showError = (message) => {
+				errorMessage.textContent = message;
+				errorMessage.classList.add('visible');
+				form.classList.remove('error-shake');
+				void form.offsetWidth;
+				form.classList.add('error-shake');
+			};
+
+			const clearError = () => {
+				errorMessage.textContent = '';
+				errorMessage.classList.remove('visible');
+				form.classList.remove('error-shake');
+			};
+
+			const isValidUsername = (value) => usernamePattern.test(value);
+
+			form.addEventListener('submit', (event) => {
+				event.preventDefault();
+
+				const usernameOne = usernameOneInput.value.trim().toLowerCase();
+				const usernameTwo = usernameTwoInput.value.trim().toLowerCase();
+
+				clearError();
+				markInputError(usernameOneInput, false);
+				markInputError(usernameTwoInput, false);
+
+				if (!usernameOne && !usernameTwo) {
+					markInputError(usernameOneInput, true);
+					markInputError(usernameTwoInput, true);
+					showError('Both usernames are required before starting the battle.');
+					return;
+				}
+
+				if (!usernameOne) {
+					markInputError(usernameOneInput, true);
+					showError('Player One username is required.');
+					return;
+				}
+
+				if (!usernameTwo) {
+					markInputError(usernameTwoInput, true);
+					showError('Player Two username is required.');
+					return;
+				}
+
+				if (!isValidUsername(usernameOne)) {
+					markInputError(usernameOneInput, true);
+					showError(
+						`"${usernameOne}" is not a valid GitHub username. Use 1-39 letters, numbers, or single hyphens.`
+					);
+					return;
+				}
+
+				if (!isValidUsername(usernameTwo)) {
+					markInputError(usernameTwoInput, true);
+					showError(
+						`"${usernameTwo}" is not a valid GitHub username. Use 1-39 letters, numbers, or single hyphens.`
+					);
+					return;
+				}
+
+				window.location.href = `/battle?p1=${encodeURIComponent(usernameOne)}&p2=${encodeURIComponent(usernameTwo)}`;
+			});
+
+			[usernameOneInput, usernameTwoInput].forEach((input) => {
+				input.addEventListener('input', () => {
+					markInputError(input, false);
+					if (errorMessage.textContent) {
+						clearError();
+					}
+				});
+			});
+		</script>
 	</body>
 </html>

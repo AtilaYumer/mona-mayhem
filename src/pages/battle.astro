@@ -1,0 +1,282 @@
+---
+const p1 = Astro.url.searchParams.get('p1') ?? '';
+const p2 = Astro.url.searchParams.get('p2') ?? '';
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Battle: {p1} vs {p2} — Mona Mayhem</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+		<style>
+			:root {
+				--green: #5fed83;
+				--purple: #8a2be2;
+				--red: #ff3366;
+				--bg: #0a0a1a;
+				color-scheme: dark;
+				font-family: 'Press Start 2P', system-ui, sans-serif;
+				background: var(--bg);
+				color: #f2f2f2;
+			}
+
+			body {
+				margin: 0;
+				min-height: 100vh;
+				display: grid;
+				place-items: center;
+				padding: 2rem 0;
+				background: radial-gradient(circle at top, #1b1b3d 0%, var(--bg) 60%);
+			}
+
+			main {
+				width: min(90vw, 900px);
+				padding: 2rem;
+				border: 2px solid var(--green);
+				border-radius: 12px;
+				background: rgba(10, 10, 26, 0.85);
+				box-shadow: 0 0 20px rgba(95, 237, 131, 0.35);
+			}
+
+			h1 {
+				margin-top: 0;
+				text-align: center;
+				color: var(--green);
+				text-shadow: 0 0 12px rgba(95, 237, 131, 0.7);
+				font-size: clamp(0.75rem, 3vw, 1.1rem);
+			}
+
+			.versus {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 1rem;
+				margin: 1.5rem 0;
+				font-size: clamp(0.6rem, 2.5vw, 0.85rem);
+			}
+
+			.player {
+				flex: 1;
+				text-align: center;
+				padding: 1rem;
+				border: 2px solid var(--purple);
+				border-radius: 8px;
+				background: rgba(138, 43, 226, 0.08);
+				min-width: 0;
+				word-break: break-all;
+			}
+
+			.vs-badge {
+				color: var(--red);
+				text-shadow: 0 0 8px rgba(255, 51, 102, 0.8);
+				font-size: 1rem;
+				flex-shrink: 0;
+			}
+
+			.graphs {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 1.5rem;
+				margin-top: 1.5rem;
+			}
+
+			@media (max-width: 600px) {
+				.graphs { grid-template-columns: 1fr; }
+			}
+
+			.graph-card {
+				border: 1px solid rgba(138, 43, 226, 0.4);
+				border-radius: 8px;
+				padding: 1rem;
+				background: rgba(10, 10, 30, 0.6);
+			}
+
+			.graph-card h2 {
+				margin: 0 0 0.75rem;
+				font-size: 0.6rem;
+				color: var(--green);
+				text-align: center;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.contrib-count {
+				text-align: center;
+				font-size: 0.55rem;
+				color: #c0c0e0;
+				margin-bottom: 0.75rem;
+			}
+
+			.contrib-grid {
+				display: flex;
+				gap: 2px;
+				overflow-x: auto;
+				padding-bottom: 4px;
+			}
+
+			.contrib-week {
+				display: flex;
+				flex-direction: column;
+				gap: 2px;
+			}
+
+			.contrib-day {
+				width: 10px;
+				height: 10px;
+				border-radius: 2px;
+				background: #1e1e3a;
+				transition: filter 0.15s;
+			}
+
+			.contrib-day:hover {
+				filter: brightness(1.6);
+				cursor: default;
+			}
+
+			.contrib-day[data-level="1"] { background: #1a4a2e; }
+			.contrib-day[data-level="2"] { background: #276e3e; }
+			.contrib-day[data-level="3"] { background: #40a055; }
+			.contrib-day[data-level="4"] { background: #5fed83; box-shadow: 0 0 4px rgba(95,237,131,0.5); }
+
+			#result-banner {
+				margin-top: 1.5rem;
+				text-align: center;
+				font-size: 0.75rem;
+				line-height: 2;
+				color: #c0c0e0;
+			}
+
+			.winner-banner {
+				margin-top: 1rem;
+				font-size: 0.85rem;
+				color: var(--green);
+				text-shadow: 0 0 10px rgba(95, 237, 131, 0.7);
+			}
+
+			.loading {
+				color: var(--green);
+				animation: pulse 1s ease-in-out infinite alternate;
+			}
+
+			@keyframes pulse {
+				from { opacity: 0.4; }
+				to { opacity: 1; }
+			}
+
+			.back-link {
+				display: block;
+				margin-top: 1.5rem;
+				text-align: center;
+				color: var(--green);
+				text-decoration: none;
+				font-size: 0.65rem;
+				opacity: 0.8;
+			}
+
+			.back-link:hover { opacity: 1; }
+
+			@media (prefers-reduced-motion: reduce) {
+				.loading { animation: none; }
+				.contrib-day { transition: none; }
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>⚔ Mona Mayhem ⚔</h1>
+			<div class="versus">
+				<div class="player" id="player-one">{p1}</div>
+				<span class="vs-badge">VS</span>
+				<div class="player" id="player-two">{p2}</div>
+			</div>
+
+			<div id="result-banner">
+				<span class="loading">Loading contributions…</span>
+			</div>
+
+			<div class="graphs" id="graphs" style="display:none">
+				<div class="graph-card" id="graph-p1">
+					<h2 id="graph-p1-name"></h2>
+					<p class="contrib-count" id="graph-p1-count"></p>
+					<div class="contrib-grid" id="grid-p1"></div>
+				</div>
+				<div class="graph-card" id="graph-p2">
+					<h2 id="graph-p2-name"></h2>
+					<p class="contrib-count" id="graph-p2-count"></p>
+					<div class="contrib-grid" id="grid-p2"></div>
+				</div>
+			</div>
+
+			<a class="back-link" href="/">← Back to battle</a>
+		</main>
+
+		<script define:vars={{ p1, p2 }}>
+			const resultBanner = document.getElementById('result-banner');
+			const graphsEl = document.getElementById('graphs');
+
+			function buildGrid(weeks, containerId) {
+				const container = document.getElementById(containerId);
+				for (const week of weeks) {
+					const col = document.createElement('div');
+					col.className = 'contrib-week';
+					for (const day of week.contribution_days) {
+						const cell = document.createElement('div');
+						cell.className = 'contrib-day';
+						cell.dataset.level = String(day.level);
+						cell.title = `${day.count} contribution${day.count !== 1 ? 's' : ''}`;
+						col.appendChild(cell);
+					}
+					container.appendChild(col);
+				}
+			}
+
+			async function fetchContributions(username) {
+				const res = await fetch(`/api/contributions/${encodeURIComponent(username)}`);
+				if (!res.ok) {
+					const body = await res.json().catch(() => ({}));
+					throw new Error(body.error ?? `Failed to fetch data for ${username}`);
+				}
+				return res.json();
+			}
+
+			async function run() {
+				try {
+					const [data1, data2] = await Promise.all([
+						fetchContributions(p1),
+						fetchContributions(p2),
+					]);
+
+					const c1 = data1.total ?? 0;
+					const c2 = data2.total ?? 0;
+					const winner = c1 > c2 ? p1 : c2 > c1 ? p2 : null;
+
+					resultBanner.innerHTML = `
+						<p class="winner-banner">
+							${winner ? `🏆 ${winner} wins!` : "🤝 It's a tie!"}
+						</p>
+					`;
+
+					document.getElementById('graph-p1-name').textContent = p1;
+					document.getElementById('graph-p1-count').textContent = `${c1} contributions`;
+					document.getElementById('graph-p2-name').textContent = p2;
+					document.getElementById('graph-p2-count').textContent = `${c2} contributions`;
+
+					buildGrid(data1.weeks ?? [], 'grid-p1');
+					buildGrid(data2.weeks ?? [], 'grid-p2');
+
+					graphsEl.style.display = 'grid';
+				} catch (err) {
+					resultBanner.innerHTML = `<p style="color:#ff3366">${err.message}</p>`;
+				}
+			}
+
+			run();
+		</script>
+	</body>
+</html>
+
